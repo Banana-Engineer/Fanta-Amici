@@ -3,8 +3,19 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
 
 export const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
+// Tiene solo l'origine (es. https://xxx.supabase.co), scartando eventuali
+// percorsi come /rest/v1/ o slash finali incollati per sbaglio: la libreria
+// aggiunge da sola i percorsi corretti.
+function cleanUrl(url) {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return url.replace(/\/+$/, "");
+  }
+}
+
 export const supabase = isConfigured
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  ? createClient(cleanUrl(SUPABASE_URL), SUPABASE_ANON_KEY)
   : null;
 
 // Il login è solo username+password: internamente Supabase vuole una email,
