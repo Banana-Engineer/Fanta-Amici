@@ -20,6 +20,8 @@ export const supabase = isConfigured
 
 // Il login è solo username+password: internamente Supabase vuole una email,
 // quindi ne generiamo una fittizia e deterministica a partire dallo username.
+// NB: si usa un TLD normale (.com) perché Supabase rifiuta come "invalid"
+// i domini riservati/finti come .local, .test, .invalid.
 export function usernameToEmail(username) {
-  return `${username.trim().toLowerCase()}@fantamici.local`;
+  return `${username.trim().toLowerCase()}@fantamici.com`;
 }
