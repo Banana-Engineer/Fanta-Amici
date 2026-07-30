@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient.js";
 import { el, esc, toast } from "../helpers.js";
+import { icon } from "../icons.js";
 
 export async function homeView(ctx) {
   const { data: groups, error } = await supabase.rpc("get_my_groups");
@@ -7,15 +8,15 @@ export async function homeView(ctx) {
 
   const root = el(`
     <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 2px 16px">
+      <div class="home-head">
         <div>
           <h1 class="page-title">I tuoi gruppi</h1>
-          <p class="subtitle">Ciao ${esc(ctx.profile?.username ?? "")} 👋</p>
+          <p class="subtitle">Ciao ${esc(ctx.profile?.username ?? "")}</p>
         </div>
-        <button class="btn btn-primary" id="new-group-btn">+ Nuovo</button>
+        <button class="btn btn-primary" id="new-group-btn">${icon("plus", 16)} Nuovo</button>
       </div>
 
-      <form class="card" id="new-group-form" hidden>
+      <form class="card narrow" id="new-group-form" hidden style="margin-bottom:16px">
         <div class="field">
           <label for="group-name">Nome del gruppo</label>
           <input type="text" id="group-name" maxlength="40" required
@@ -24,7 +25,7 @@ export async function homeView(ctx) {
         <button class="btn btn-primary btn-block">Crea gruppo</button>
       </form>
 
-      <div id="group-list"></div>
+      <div id="group-list" class="group-list"></div>
     </div>`);
 
   const list = root.querySelector("#group-list");
@@ -41,11 +42,11 @@ export async function homeView(ctx) {
         <div>
           <div class="g-name">${esc(g.name)}</div>
           <div class="g-meta">
-            <span>👥 ${g.member_count} ${g.member_count === 1 ? "membro" : "membri"}</span>
+            <span>${icon("users", 14)} ${g.member_count} ${g.member_count === 1 ? "membro" : "membri"}</span>
             ${g.is_admin ? '<span class="pill pill-admin">Admin</span>' : ""}
           </div>
         </div>
-        <span class="chev">›</span>
+        <span class="chev">${icon("chevron-right", 20)}</span>
       </div>`);
     const open = () => { location.hash = `#/group/${g.id}`; };
     card.addEventListener("click", open);
@@ -64,7 +65,7 @@ export async function homeView(ctx) {
     try {
       const { data: gid, error: err } = await supabase.rpc("create_group", { p_name: name });
       if (err) throw err;
-      toast("Gruppo creato! 🎉");
+      toast("Gruppo creato!");
       location.hash = `#/group/${gid}`;
     } catch (err) {
       toast(err.message, true);

@@ -1,5 +1,7 @@
 import { supabase, isConfigured } from "./supabaseClient.js";
 import { el, esc } from "./helpers.js";
+import { icon } from "./icons.js";
+import { showRules } from "./rules.js";
 import { authView } from "./views/auth.js";
 import { homeView } from "./views/home.js";
 import { joinView } from "./views/join.js";
@@ -31,7 +33,7 @@ const routes = [
 function setupNotice() {
   return el(`
     <div class="card setup-box">
-      <h2>⚙️ Configurazione necessaria</h2>
+      <h2>${icon("settings", 20)} Configurazione necessaria</h2>
       <p class="subtitle">L'app non è ancora collegata a Supabase.</p>
       <ol>
         <li>Crea un progetto gratuito su <b>supabase.com</b></li>
@@ -45,12 +47,14 @@ function setupNotice() {
 function topbar() {
   const bar = el(`
     <header class="topbar">
-      <a class="logo" href="#/">🏆 Fanta<span>Amici</span></a>
+      <a class="logo" href="#/">${icon("trophy", 22)} <span>Fanta<b>Amici</b></span></a>
       <div class="user">
-        <span>${esc(profile?.username ?? "")}</span>
-        <button class="btn btn-ghost btn-small" id="logout-btn">Esci</button>
+        <span class="user-name">${esc(profile?.username ?? "")}</span>
+        <button class="btn btn-ghost btn-small" id="rules-btn">${icon("book-open", 15)} Regole</button>
+        <button class="btn btn-ghost btn-small" id="logout-btn">${icon("log-out", 15)} Esci</button>
       </div>
     </header>`);
+  bar.querySelector("#rules-btn").addEventListener("click", showRules);
   bar.querySelector("#logout-btn").addEventListener("click", async () => {
     await supabase.auth.signOut();
     location.hash = "#/login";

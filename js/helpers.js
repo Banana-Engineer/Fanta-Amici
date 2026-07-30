@@ -18,6 +18,11 @@ export function fmtPoints(n) {
   return Number.isInteger(num) ? String(num) : num.toFixed(2).replace(/\.?0+$/, "");
 }
 
+// Punteggio arrotondato all'intero più vicino (per la classifica).
+export function fmtInt(n) {
+  return String(Math.round(Number(n)));
+}
+
 export function fmtDate(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleString("it-IT", {

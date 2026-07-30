@@ -1,5 +1,8 @@
 import { supabase } from "../supabaseClient.js";
-import { el, esc, toast, fmtPoints, fmtDate, timeAgo, isExpired, QTYPE_LABELS } from "../helpers.js";
+import { el, esc, toast, fmtPoints, fmtInt, fmtDate, timeAgo, isExpired, QTYPE_LABELS } from "../helpers.js";
+import { icon } from "../icons.js";
+
+const ACTIVITY_PAGE = 15;
 
 // Stato "effettivo" di un quesito: una scadenza passata equivale a votazione chiusa.
 function qState(q) {
@@ -9,9 +12,9 @@ function qState(q) {
 }
 
 function statusPill(state) {
-  if (state === "open") return '<span class="pill pill-open">● Aperta</span>';
+  if (state === "open") return '<span class="pill pill-open"><span class="dot"></span> Aperta</span>';
   if (state === "closed") return '<span class="pill pill-closed">In attesa del risultato</span>';
-  return '<span class="pill pill-resolved">✓ Risolta</span>';
+  return `<span class="pill pill-resolved">${icon("check", 12)} Risolta</span>`;
 }
 
 function voteAnswerText(v, q) {
@@ -56,7 +59,7 @@ function voteFormHtml(q) {
     <form class="vote-form" data-form="vote" data-qid="${q.id}" data-qtype="${q.qtype}">
       ${inputs}
       <button class="btn btn-primary btn-block">Vota</button>
-      <div class="secret-note">🔒 I voti degli altri sono nascosti finché non voti. Il voto non si può cambiare.</div>
+      <div class="secret-note">${icon("lock", 14)} <span>I voti degli altri sono nascosti finché non voti. Il voto non si può cambiare.</span></div>
     </form>`;
 }
 
@@ -83,11 +86,10 @@ function resolveFormHtml(q) {
 }
 
 function correctAnswerHtml(q) {
-  if (q.qtype === "number") {
-    return `<div class="correct-answer">✓ Risposta corretta: ${esc(q.correct_number)}</div>`;
-  }
-  const correct = q.options.filter((o) => o.is_correct).map((o) => esc(o.label)).join(", ");
-  return `<div class="correct-answer">✓ Risposta corretta: ${correct}</div>`;
+  const answer = q.qtype === "number"
+    ? esc(q.correct_number)
+    : q.options.filter((o) => o.is_correct).map((o) => esc(o.label)).join(", ");
+  return `<div class="correct-answer">${icon("check", 16)} Risposta corretta: ${answer}</div>`;
 }
 
 function questionCard(q, votes, ctx, isAdmin) {
@@ -115,7 +117,9 @@ function questionCard(q, votes, ctx, isAdmin) {
   }
 
   const expiry = q.expires_at
-    ? `<div class="q-expiry">${isExpired(q) ? "⌛ Scaduta il" : "⏳ Scade il"} ${fmtDate(q.expires_at)}</div>`
+    ? `<div class="q-expiry">${isExpired(q)
+        ? `${icon("hourglass", 14)} Scaduta il ${fmtDate(q.expires_at)}`
+        : `${icon("clock", 14)} Scade il ${fmtDate(q.expires_at)}`}</div>`
     : "";
 
   return el(`
@@ -139,7 +143,7 @@ function challengeCard(c, ctx, isAdmin, members) {
   const done = c.status === "completed";
   let body = "";
   if (done) {
-    body = `<div class="winner-banner">🏅 Completata da <b>${esc(c.winner?.username ?? "?")}</b> (+${fmtPoints(c.points)} pt)</div>`;
+    body = `<div class="winner-banner">${icon("medal", 16)} Completata da <b>${esc(c.winner?.username ?? "?")}</b> (+${fmtPoints(c.points)} pt)</div>`;
   } else if (isAdmin) {
     const opts = members
       .map((m) => `<option value="${m.user_id}">${esc(m.username)}</option>`).join("");
@@ -160,8 +164,10 @@ function challengeCard(c, ctx, isAdmin, members) {
   return el(`
     <div class="card">
       <div class="q-head">
-        <div class="q-title">🎯 ${esc(c.title)}</div>
-        ${done ? '<span class="pill pill-resolved">✓ Completata</span>' : '<span class="pill pill-open">● Attiva</span>'}
+        <div class="q-title">${icon("target", 16)} <span>${esc(c.title)}</span></div>
+        ${done
+          ? `<span class="pill pill-resolved">${icon("check", 12)} Completata</span>`
+          : '<span class="pill pill-open"><span class="dot"></span> Attiva</span>'}
       </div>
       <div class="q-meta">
         <span class="pill pill-points">${fmtPoints(c.points)} pt</span>
@@ -176,8 +182,9 @@ export async function groupView(ctx, groupId) {
   const [groupRes, lbRes, actRes, qRes, cRes] = await Promise.all([
     supabase.from("groups").select("*").eq("id", groupId).maybeSingle(),
     supabase.rpc("get_leaderboard", { p_group: groupId }),
+    // Se ne arrivano PAGE+1 sappiamo che c'è ancora altro da mostrare
     supabase.from("activities").select("*").eq("group_id", groupId)
-      .order("created_at", { ascending: false }).limit(15),
+      .order("created_at", { ascending: false }).range(0, ACTIVITY_PAGE),
     supabase.from("questions")
       .select("*, options:question_options(*), creator:profiles(username)")
       .eq("group_id", groupId).order("created_at", { ascending: false }),
@@ -193,7 +200,8 @@ export async function groupView(ctx, groupId) {
   if (!group) throw new Error("Gruppo non trovato (o non ne fai parte)");
 
   const leaderboard = lbRes.data;
-  const activities = actRes.data;
+  let activities = actRes.data.slice(0, ACTIVITY_PAGE);
+  let hasMoreActivities = actRes.data.length > ACTIVITY_PAGE;
   const questions = qRes.data.map((q) => ({
     ...q, options: [...q.options].sort((a, b) => a.idx - b.idx),
   }));
@@ -216,63 +224,82 @@ export async function groupView(ctx, groupId) {
 
   const root = el(`
     <div>
-      <a class="back-link" href="#/">‹ I tuoi gruppi</a>
-      <div class="card">
+      <a class="back-link" href="#/">${icon("chevron-left", 15)} I tuoi gruppi</a>
+
+      <div class="card group-head">
         <div class="q-head">
-          <h1 class="page-title">${esc(group.name)}</h1>
+          <h1 class="group-name">${esc(group.name)}</h1>
           ${isAdmin ? '<span class="pill pill-admin">Sei l’admin</span>' : ""}
         </div>
-        <div class="invite-box">
+        <div class="invite-line">
+          ${icon("link", 14)}
           <code>${esc(inviteLink)}</code>
-          <button class="btn btn-primary btn-small" data-action="copy-invite">Copia invito</button>
+          <button class="btn btn-ghost btn-small" data-action="copy-invite">${icon("copy", 13)} Copia</button>
         </div>
       </div>
 
-      <h2 class="section-title">🏆 Classifica</h2>
-      <div class="card" id="leaderboard"></div>
+      <div class="group-grid">
+        <aside class="group-side">
+          <h2 class="section-title">${icon("trophy", 15)} Classifica</h2>
+          <div class="card" id="leaderboard"></div>
 
-      <h2 class="section-title">🔔 Attività recenti</h2>
-      <div class="card" id="activity"></div>
+          <h2 class="section-title">${icon("bell", 15)} Attività recenti</h2>
+          <div class="card" id="activity-card">
+            <div id="activity"></div>
+            <button class="btn btn-ghost btn-small btn-block more-activity" data-action="more-activity" hidden>
+              Mostra altre attività
+            </button>
+          </div>
+        </aside>
 
-      <div class="actions-row">
-        <a class="btn btn-primary" href="#/group/${group.id}/new-question">＋ Scommessa</a>
-        <a class="btn btn-ghost" href="#/group/${group.id}/new-challenge">🎯 Sfida</a>
+        <div class="group-main">
+          <div class="actions-row">
+            <a class="btn btn-primary" href="#/group/${group.id}/new-question">${icon("plus", 16)} Scommessa</a>
+            <a class="btn btn-ghost" href="#/group/${group.id}/new-challenge">${icon("target", 16)} Sfida</a>
+          </div>
+
+          <h2 class="section-title">${icon("zap", 15)} In corso</h2>
+          <div id="active-list"></div>
+
+          <h2 class="section-title">${icon("archive", 15)} Concluse</h2>
+          <div id="done-list"></div>
+        </div>
       </div>
-
-      <h2 class="section-title">⚡ In corso</h2>
-      <div id="active-list"></div>
-
-      <h2 class="section-title">📦 Concluse</h2>
-      <div id="done-list"></div>
     </div>`);
 
-  // --- classifica ---
+  // --- classifica (punteggi arrotondati all'intero) ---
   const lbBox = root.querySelector("#leaderboard");
-  const medals = ["🥇", "🥈", "🥉"];
   leaderboard.forEach((row, i) => {
+    const rank = i < 3 ? icon("medal", 19, `medal-${i + 1}`) : String(i + 1);
     lbBox.append(el(`
       <div class="lb-row ${row.user_id === ctx.session.user.id ? "me" : ""}">
-        <span class="lb-rank">${medals[i] ?? i + 1}</span>
+        <span class="lb-rank">${rank}</span>
         <span class="lb-name">
           <span class="name-text">${esc(row.username)}</span>
           ${row.is_admin ? '<span class="pill pill-admin">Admin</span>' : ""}
         </span>
-        <span class="lb-points">${fmtPoints(row.total_points)} pt</span>
+        <span class="lb-points">${fmtInt(row.total_points)} pt</span>
       </div>`));
   });
 
-  // --- attività ---
+  // --- attività (paginata: 15 alla volta) ---
   const actBox = root.querySelector("#activity");
-  if (!activities.length) {
-    actBox.append(el('<div class="empty">Ancora nessuna attività.</div>'));
+  const moreBtn = root.querySelector('[data-action="more-activity"]');
+  function renderActivities() {
+    actBox.replaceChildren();
+    if (!activities.length) {
+      actBox.append(el('<div class="empty">Ancora nessuna attività.</div>'));
+    }
+    for (const a of activities) {
+      actBox.append(el(`
+        <div class="activity">
+          ${esc(a.message)}
+          <div class="when">${timeAgo(a.created_at)}</div>
+        </div>`));
+    }
+    moreBtn.hidden = !hasMoreActivities;
   }
-  for (const a of activities) {
-    actBox.append(el(`
-      <div class="activity">
-        ${esc(a.message)}
-        <div class="when">${timeAgo(a.created_at)}</div>
-      </div>`));
-  }
+  renderActivities();
 
   // --- quesiti e sfide ---
   const activeList = root.querySelector("#active-list");
@@ -287,7 +314,7 @@ export async function groupView(ctx, groupId) {
     (c.status === "completed" ? doneList : activeList).append(card);
   }
   if (!activeList.children.length) {
-    activeList.append(el('<div class="card empty">Niente in corso. Crea la prima scommessa! 🎲</div>'));
+    activeList.append(el('<div class="card empty">Niente in corso. Crea la prima scommessa!</div>'));
   }
   if (!doneList.children.length) {
     doneList.append(el('<div class="card empty">L’archivio è ancora vuoto.</div>'));
@@ -303,10 +330,20 @@ export async function groupView(ctx, groupId) {
       if (action === "copy-invite") {
         try {
           await navigator.clipboard.writeText(inviteLink);
-          toast("Link di invito copiato! 📋");
+          toast("Link di invito copiato!");
         } catch {
           prompt("Copia questo link:", inviteLink);
         }
+      } else if (action === "more-activity") {
+        const from = activities.length;
+        const { data, error } = await supabase.from("activities")
+          .select("*").eq("group_id", groupId)
+          .order("created_at", { ascending: false })
+          .range(from, from + ACTIVITY_PAGE);
+        if (error) throw error;
+        activities = activities.concat(data.slice(0, ACTIVITY_PAGE));
+        hasMoreActivities = data.length > ACTIVITY_PAGE;
+        renderActivities();
       } else if (action === "toggle-resolve") {
         const box = root.querySelector(`#resolve-${CSS.escape(qid)}`);
         box.hidden = !box.hidden;
@@ -357,7 +394,7 @@ export async function groupView(ctx, groupId) {
         if (!confirm("Il voto NON si può modificare. Confermi la tua scelta?")) return;
         const { error } = await supabase.from("votes").insert(payload);
         if (error) throw error;
-        toast("Voto registrato! 🗳️ Ora puoi vedere i voti degli altri");
+        toast("Voto registrato! Ora puoi vedere i voti degli altri");
         ctx.refresh();
       } else if (kind === "resolve") {
         const qid = form.dataset.qid;
@@ -374,7 +411,7 @@ export async function groupView(ctx, groupId) {
         if (!confirm("Confermi il risultato? I punti verranno assegnati subito.")) return;
         const { error } = await supabase.rpc("resolve_question", args);
         if (error) throw error;
-        toast("Risultato salvato: punti assegnati! 🏆");
+        toast("Risultato salvato: punti assegnati!");
         ctx.refresh();
       } else if (kind === "award") {
         const cid = form.dataset.cid;
@@ -383,7 +420,7 @@ export async function groupView(ctx, groupId) {
         if (!confirm("Assegnare la sfida a questo giocatore?")) return;
         const { error } = await supabase.rpc("award_challenge", { p_challenge: cid, p_winner: winner });
         if (error) throw error;
-        toast("Sfida assegnata! 🏅");
+        toast("Sfida assegnata!");
         ctx.refresh();
       }
     } catch (err) {

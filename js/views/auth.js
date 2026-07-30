@@ -1,5 +1,7 @@
 import { supabase, usernameToEmail } from "../supabaseClient.js";
 import { el, esc, toast } from "../helpers.js";
+import { icon } from "../icons.js";
+import { showRules } from "../rules.js";
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -15,7 +17,7 @@ export function authView() {
 
   const root = el(`
     <div class="auth-wrap">
-      <div class="auth-logo">🏆</div>
+      <div class="auth-logo">${icon("trophy", 44)}</div>
       <h1 class="auth-title">FantaAmici</h1>
       <p class="auth-sub">Scommesse e sfide tra amici</p>
 
@@ -41,12 +43,20 @@ export function authView() {
         </form>
 
         <div class="disclaimer">
-          <span>⚠️</span>
-          <span><b>Nota:</b> la sicurezza delle password non è garantita.
+          ${icon("alert-triangle", 22)}
+          <span><b>Attenzione:</b> la sicurezza delle password non è garantita.
           Non usare password che utilizzi per altri servizi sensibili.</span>
         </div>
       </div>
+
+      <div class="auth-rules">
+        <button type="button" class="btn btn-ghost btn-small" id="auth-rules-btn">
+          ${icon("book-open", 15)} Regole del gioco
+        </button>
+      </div>
     </div>`);
+
+  root.querySelector("#auth-rules-btn").addEventListener("click", showRules);
 
   const form = root.querySelector("#auth-form");
   const submitBtn = root.querySelector("#submit-btn");
@@ -100,7 +110,7 @@ export function authView() {
           toast('Registrazione riuscita ma la "Confirm email" è attiva su Supabase: disattivala (vedi README)', true);
           return;
         }
-        toast(`Benvenuto, ${username}! 🎉`);
+        toast(`Benvenuto, ${username}!`);
       }
       // il redirect (inclusi gli inviti in sospeso) è gestito dal router
     } catch (err) {

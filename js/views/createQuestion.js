@@ -1,10 +1,11 @@
 import { supabase } from "../supabaseClient.js";
 import { el, toast } from "../helpers.js";
+import { icon } from "../icons.js";
 
 export async function createQuestionView(ctx, groupId) {
   const root = el(`
-    <div>
-      <a class="back-link" href="#/group/${groupId}">‹ Torna al gruppo</a>
+    <div class="narrow">
+      <a class="back-link" href="#/group/${groupId}">${icon("chevron-left", 15)} Torna al gruppo</a>
       <h1 class="page-title" style="margin-bottom:14px">Nuova scommessa</h1>
 
       <form class="card" id="q-form">
@@ -65,7 +66,7 @@ export async function createQuestionView(ctx, groupId) {
     const row = el(`
       <div style="display:flex;gap:8px;margin-top:8px">
         <input type="text" class="q-option" maxlength="80" required placeholder="Opzione">
-        <button type="button" class="btn btn-ghost btn-small remove-opt" title="Rimuovi">✕</button>
+        <button type="button" class="btn btn-ghost btn-small remove-opt" title="Rimuovi">${icon("x", 14)}</button>
       </div>`);
     row.querySelector("input").value = value;
     row.querySelector(".remove-opt").addEventListener("click", () => {
@@ -114,7 +115,7 @@ export async function createQuestionView(ctx, groupId) {
         p_options: options,
       });
       if (error) throw error;
-      toast("Scommessa creata! 🎲");
+      toast("Scommessa creata!");
       location.hash = `#/group/${groupId}`;
     } catch (err) {
       toast(err.message, true);

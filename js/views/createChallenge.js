@@ -1,10 +1,11 @@
 import { supabase } from "../supabaseClient.js";
 import { el, toast } from "../helpers.js";
+import { icon } from "../icons.js";
 
 export async function createChallengeView(ctx, groupId) {
   const root = el(`
-    <div>
-      <a class="back-link" href="#/group/${groupId}">‹ Torna al gruppo</a>
+    <div class="narrow">
+      <a class="back-link" href="#/group/${groupId}">${icon("chevron-left", 15)} Torna al gruppo</a>
       <h1 class="page-title" style="margin-bottom:14px">Nuova sfida</h1>
 
       <form class="card" id="c-form">
@@ -44,7 +45,7 @@ export async function createChallengeView(ctx, groupId) {
         points: Number(root.querySelector("#c-points").value),
       });
       if (error) throw error;
-      toast("Sfida creata! 🎯");
+      toast("Sfida creata!");
       location.hash = `#/group/${groupId}`;
     } catch (err) {
       toast(err.message, true);
