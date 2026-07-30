@@ -25,7 +25,7 @@ export function showRules() {
 
           <h3>${icon("dices", 16)} Scommesse</h3>
           <p>Ogni giocatore può creare delle scommesse scegliendo la domanda, le
-          risposte e il valore dei punti. Non fate i furbi, l'idea è quella di
+          risposte e il valore in punti. Non fate i furbi, l'idea è quella di
           creare scommesse di cui nessuno sa ancora la risposta! Potete inserire
           una data di scadenza, ma se non dovesse esserci, l'admin potrà chiudere
           la scommessa quando sarà opportuno. Quando l'evento sarà concluso
