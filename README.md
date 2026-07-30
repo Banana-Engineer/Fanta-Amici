@@ -84,6 +84,41 @@ poi apri http://localhost:8000 nel browser.
   è imposto dal database, non solo dall'interfaccia — niente trucchi con gli strumenti
   sviluppatore del browser. 😉
 
+## 💾 Dove sono i dati (e come fare un backup)
+
+**I dati del gioco NON sono su GitHub.** GitHub contiene solo il codice del sito.
+Tutto il resto vive nel database Postgres del tuo progetto **Supabase**, nel cloud:
+
+| Cosa | Dove (tabella) |
+|---|---|
+| Account (username/password) | `auth.users` (sezione Authentication) |
+| Nomi utente visibili | `profiles` |
+| Gruppi e membri | `groups`, `group_members` |
+| Scommesse e opzioni | `questions`, `question_options` |
+| Voti e punti assegnati | `votes` |
+| Sfide | `challenges` |
+| Feed attività | `activities` |
+
+**Backup manuale (gratis, 2 minuti):** il piano gratuito di Supabase non fa backup
+automatici, ma puoi esportare i dati quando vuoi:
+1. Dashboard Supabase → **Table Editor**
+2. Seleziona una tabella → menu **⋯** in alto → **Export data as CSV**
+3. Ripeti per le tabelle della lista qui sopra e conserva i file.
+
+Farlo ogni tanto (es. a fine serata di gioco) è più che sufficiente per una
+partita tra amici. I backup automatici giornalieri esistono solo nel piano Pro.
+
+## 🔧 Aggiornare il database senza perdere i dati
+
+Regola d'oro: sul database in uso si eseguono **solo** i file `migration-*.sql`.
+
+| File in `supabase/` | Quando usarlo | Distruttivo? |
+|---|---|---|
+| `schema.sql` | Solo su un progetto Supabase **nuovo e vuoto** | No (su un DB attivo dà errore e si ferma) |
+| `migration-*.sql` | Per aggiungere nuove funzioni a un DB attivo | **No, mai** |
+| `riparazione-profili.sql` | Se i profili risultano scollegati dagli account | No |
+| `reset-database.sql` | ⛔ Solo per azzerare TUTTO volontariamente | **SÌ: cancella ogni dato** |
+
 ## Struttura del progetto
 
 ```
@@ -92,5 +127,8 @@ css/style.css               stile (minimalista, mobile-first)
 js/config.js                ← unico file da modificare (chiavi Supabase)
 js/main.js                  router e sessione
 js/views/…                  le schermate (login, home, gruppo, creazione…)
-supabase/schema.sql         ← da eseguire una volta nel SQL Editor di Supabase
+img/                        logo
+supabase/schema.sql         ← da eseguire una volta su un progetto NUOVO
+supabase/migration-*.sql    aggiornamenti sicuri per il database in uso
+supabase/reset-database.sql ⛔ azzera tutto (usare solo apposta)
 ```
