@@ -47,7 +47,7 @@ function setupNotice() {
 function topbar() {
   const bar = el(`
     <header class="topbar">
-      <a class="logo" href="#/">${icon("trophy", 22)} <span>Fanta<b>Amici</b></span></a>
+      <a class="logo" href="#/"><img class="logo-img" src="img/logo-small.png" alt=""> <span>Fanta<b>Amici</b></span></a>
       <div class="user">
         <span class="user-name">${esc(profile?.username ?? "")}</span>
         <button class="btn btn-ghost btn-small" id="rules-btn">${icon("book-open", 15)} Regole</button>

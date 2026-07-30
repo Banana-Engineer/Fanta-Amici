@@ -14,41 +14,54 @@ export function showRules() {
         </div>
         <div class="modal-body">
 
-          <h3>${icon("users", 16)} Gruppi</h3>
-          <p>Si entra in un gruppo <b>solo tramite link di invito</b>. Chi crea il
-          gruppo diventa l'<b>admin</b>. La classifica somma i punti vinti con
-          scommesse e sfide.</p>
+          <p>Ma figa raga, ci sono pure le regole! Su dai, ve le le spiego ASAP
+          così potete subito iniziare a fatturare punti.</p>
+
+          <h3>${icon("users", 16)} I gruppi</h3>
+          <p>Non vogliamo plebei nei gruppi, quindi si può accedere solamente con
+          un invito speciale tramite il link. All'interno di un gruppo c'è una
+          classifica e il vostro unico obiettivo è conquistare almeno il podio.
+          Per la gestione del gruppo c'è un un admin, il fondatore della partita.</p>
 
           <h3>${icon("dices", 16)} Scommesse</h3>
-          <p>Chiunque può creare una scommessa scegliendo domanda, modalità di
-          risposta e <b>valore in punti</b>. La scadenza è facoltativa: senza
-          scadenza, è l'admin a chiudere la votazione. A evento concluso l'admin
-          inserisce la risposta corretta e i punti vengono assegnati
-          automaticamente.</p>
+          <p>Ogni giocatore può creare delle scommesse scegliendo la domanda, le
+          risposte e il valore dei punti. Non fate i furbi, l'idea è quella di
+          creare scommesse di cui nessuno sa ancora la risposta! Potete inserrire
+          una data di scadenza, ma se non dovesse esserci, l'admin potrà chiudere
+          la scommessa quando sarà opportuno. Quando l'evento sarà concluso
+          l'admin inserisce la risposta corretta e i punti vengono assegnati.</p>
 
           <h3>${icon("lock", 16)} Voti</h3>
-          <ul>
-            <li>I voti degli altri restano <b>nascosti</b> finché non voti anche tu.</li>
-            <li>Una volta inviato, il voto <b>non si può più modificare</b>.</li>
-          </ul>
+          <p>Per evitare sbircioni, i voti degli altri giocatori restano nascosti
+          finché non si ha votato. Una volta inviato, il voto non si potrà più
+          modificare.</p>
 
           <h3>${icon("trophy", 16)} Punteggi</h3>
+          <p>In base al tipo di domanda i punteggi vengono assegnati diversamente.</p>
           <ul>
-            <li><b>Vero/Falso</b> e <b>scelta singola</b>: risposta giusta = tutti i punti.</li>
-            <li><b>Scelta multipla</b>: punti = valore × (opzioni corrette selezionate ÷ opzioni totali).</li>
-            <li><b>Numero</b>: vince chi è più vicino alla risposta; in caso di
-            parità i punti si dividono equamente.</li>
+            <li><b>Vero/Falso</b>: chi risponde correttamente riceve tutti i punti</li>
+            <li><b>Domanda a scelta singla</b>: chi risponde correttamente riceve tutti i punti</li>
+            <li><b>Domanda a scelta singola</b>: punti = punti massimi × (risposte corrette/risposte totali)</li>
+            <li><b>Inserimento di numero</b>: il giocatore con la stima più vicina
+            al valore corretto riceve i punti. Se più persone sono alla stessa
+            distanza dalla risposta corretta, i punti vengono divisi equamente</li>
           </ul>
 
           <h3>${icon("target", 16)} Sfide</h3>
-          <p>Una sfida è un'impresa nella vita reale (es. <i>"il primo che si
-          presenta scalzo"</i>) con un valore in punti. Quando qualcuno la
-          completa, l'admin gli assegna i punti.</p>
+          <p>Oltre alle scommesse si possono anche lanciare delle sfide. Chi
+          lancia la sfida sceglie un titolo, scrive una piccola descrizione e
+          decide il valore della sfida in punti. L'admin assegnerà i punti alla
+          persona che completarà la sfida. Una prova video è richiesta se l'admin
+          non era presente al momento del compimento della sfida.</p>
 
-          <h3>${icon("medal", 16)} Ruolo dell'admin</h3>
-          <p>L'admin fa da moderatore: può <b>correggere il valore</b> di
-          scommesse e sfide troppo facili o esagerate, chiude le votazioni e
-          inserisce i risultati. Si impegna a essere il più onesto possibile.</p>
+          <h3>${icon("medal", 16)} L'admin</h3>
+          <p>Può chiudere una sfida o una scommessa, inserisce i risultati e
+          soprattutto può cambiare il valore delle sfide e delle scommesse.
+          Corrompetelo per vicere più punti.</p>
+
+          <p style="margin-top:14px">Okay, penso che queste siano tutte le regole!
+          Mi raccomando, i veri vincitori sono quelli che propongono le scommesse
+          e le sfide più creative!</p>
 
         </div>
       </div>

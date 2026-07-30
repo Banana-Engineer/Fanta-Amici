@@ -17,7 +17,7 @@ export function authView() {
 
   const root = el(`
     <div class="auth-wrap">
-      <div class="auth-logo">${icon("trophy", 44)}</div>
+      <div class="auth-logo"><img src="img/logo.png" alt="FantaAmici"></div>
       <h1 class="auth-title">FantaAmici</h1>
       <p class="auth-sub">Scommesse e sfide tra amici</p>
 
