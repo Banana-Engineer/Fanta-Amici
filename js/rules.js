@@ -14,19 +14,19 @@ export function showRules() {
         </div>
         <div class="modal-body">
 
-          <p>Ma figa raga, ci sono pure le regole! Su dai, ve le le spiego ASAP
+          <p>Ma figa raga, ci sono pure le regole! Su dai, ve le spiego ASAP
           così potete subito iniziare a fatturare punti.</p>
 
           <h3>${icon("users", 16)} I gruppi</h3>
           <p>Non vogliamo plebei nei gruppi, quindi si può accedere solamente con
           un invito speciale tramite il link. All'interno di un gruppo c'è una
           classifica e il vostro unico obiettivo è conquistare almeno il podio.
-          Per la gestione del gruppo c'è un un admin, il fondatore della partita.</p>
+          Per la gestione del gruppo c'è un admin, il fondatore della partita.</p>
 
           <h3>${icon("dices", 16)} Scommesse</h3>
           <p>Ogni giocatore può creare delle scommesse scegliendo la domanda, le
           risposte e il valore dei punti. Non fate i furbi, l'idea è quella di
-          creare scommesse di cui nessuno sa ancora la risposta! Potete inserrire
+          creare scommesse di cui nessuno sa ancora la risposta! Potete inserire
           una data di scadenza, ma se non dovesse esserci, l'admin potrà chiudere
           la scommessa quando sarà opportuno. Quando l'evento sarà concluso
           l'admin inserisce la risposta corretta e i punti vengono assegnati.</p>
@@ -40,8 +40,8 @@ export function showRules() {
           <p>In base al tipo di domanda i punteggi vengono assegnati diversamente.</p>
           <ul>
             <li><b>Vero/Falso</b>: chi risponde correttamente riceve tutti i punti</li>
-            <li><b>Domanda a scelta singla</b>: chi risponde correttamente riceve tutti i punti</li>
-            <li><b>Domanda a scelta singola</b>: punti = punti massimi × (risposte corrette/risposte totali)</li>
+            <li><b>Domanda a scelta singola</b>: chi risponde correttamente riceve tutti i punti</li>
+            <li><b>Domanda a scelta multipla</b>: punti = punti massimi × (risposte corrette/risposte totali)</li>
             <li><b>Inserimento di numero</b>: il giocatore con la stima più vicina
             al valore corretto riceve i punti. Se più persone sono alla stessa
             distanza dalla risposta corretta, i punti vengono divisi equamente</li>
@@ -51,13 +51,13 @@ export function showRules() {
           <p>Oltre alle scommesse si possono anche lanciare delle sfide. Chi
           lancia la sfida sceglie un titolo, scrive una piccola descrizione e
           decide il valore della sfida in punti. L'admin assegnerà i punti alla
-          persona che completarà la sfida. Una prova video è richiesta se l'admin
+          persona che completerà la sfida. Una prova video è richiesta se l'admin
           non era presente al momento del compimento della sfida.</p>
 
           <h3>${icon("medal", 16)} L'admin</h3>
           <p>Può chiudere una sfida o una scommessa, inserisce i risultati e
           soprattutto può cambiare il valore delle sfide e delle scommesse.
-          Corrompetelo per vicere più punti.</p>
+          Corrompetelo per vincere più punti.</p>
 
           <p style="margin-top:14px">Okay, penso che queste siano tutte le regole!
           Mi raccomando, i veri vincitori sono quelli che propongono le scommesse
