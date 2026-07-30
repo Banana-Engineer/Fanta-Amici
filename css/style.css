@@ -100,6 +100,8 @@ body {
 .btn-ghost { background: var(--card); color: var(--text); border: 1px solid var(--line); }
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 .btn-small { padding: 6px 11px; font-size: .84rem; border-radius: 8px; }
+.btn-danger { color: var(--red); border-color: #fecaca; }
+.btn-danger:hover { color: var(--red); border-color: var(--red); background: var(--red-soft); }
 .btn-block { width: 100%; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 

@@ -106,14 +106,22 @@ function questionCard(q, votes, ctx, isAdmin) {
   }
 
   let adminTools = "";
-  if (isAdmin && !resolved) {
+  if (isAdmin) {
+    const buttons = [];
+    if (state === "open") {
+      buttons.push(`<button class="btn btn-ghost btn-small" data-action="close-q" data-qid="${q.id}">Chiudi votazione</button>`);
+    }
+    if (!resolved) {
+      buttons.push(`<button class="btn btn-ghost btn-small" data-action="edit-qp" data-qid="${q.id}" data-points="${q.points}">Modifica punti</button>`);
+    }
+    buttons.push(`<button class="btn btn-ghost btn-small" data-action="edit-qt" data-qid="${q.id}">Modifica testo</button>`);
+    buttons.push(`<button class="btn btn-ghost btn-small btn-danger" data-action="del-q" data-qid="${q.id}">Elimina</button>`);
+    if (!resolved) {
+      buttons.push(`<button class="btn btn-primary btn-small" data-action="toggle-resolve" data-qid="${q.id}">Inserisci risultato</button>`);
+    }
     adminTools = `
-      <div class="admin-tools">
-        ${state === "open" ? `<button class="btn btn-ghost btn-small" data-action="close-q" data-qid="${q.id}">Chiudi votazione</button>` : ""}
-        <button class="btn btn-ghost btn-small" data-action="edit-qp" data-qid="${q.id}" data-points="${q.points}">Modifica punti</button>
-        <button class="btn btn-primary btn-small" data-action="toggle-resolve" data-qid="${q.id}">Inserisci risultato</button>
-      </div>
-      ${resolveFormHtml(q)}`;
+      <div class="admin-tools">${buttons.join("")}</div>
+      ${resolved ? "" : resolveFormHtml(q)}`;
   }
 
   const expiry = q.expires_at
@@ -144,12 +152,20 @@ function challengeCard(c, ctx, isAdmin, members) {
   let body = "";
   if (done) {
     body = `<div class="winner-banner">${icon("medal", 16)} Completata da <b>${esc(c.winner?.username ?? "?")}</b> (+${fmtPoints(c.points)} pt)</div>`;
+    if (isAdmin) {
+      body += `
+        <div class="admin-tools">
+          <button class="btn btn-ghost btn-small btn-danger" data-action="del-c" data-cid="${c.id}">Elimina</button>
+        </div>`;
+    }
   } else if (isAdmin) {
     const opts = members
       .map((m) => `<option value="${m.user_id}">${esc(m.username)}</option>`).join("");
     body = `
       <div class="admin-tools">
         <button class="btn btn-ghost btn-small" data-action="edit-cp" data-cid="${c.id}" data-points="${c.points}">Modifica punti</button>
+        <button class="btn btn-ghost btn-small" data-action="edit-ct" data-cid="${c.id}">Modifica testo</button>
+        <button class="btn btn-ghost btn-small btn-danger" data-action="del-c" data-cid="${c.id}">Elimina</button>
       </div>
       <form class="resolve-form" data-form="award" data-cid="${c.id}" style="margin-top:10px">
         <h4>Chi ha completato la sfida?</h4>
@@ -365,6 +381,42 @@ export async function groupView(ctx, groupId) {
         const { error } = await supabase.rpc(rpcName, args);
         if (error) throw error;
         toast("Punti aggiornati");
+        ctx.refresh();
+      } else if (action === "edit-qt") {
+        const q = questions.find((x) => x.id === qid);
+        const input = prompt("Nuovo testo della scommessa:", q?.title ?? "");
+        if (input === null) return;
+        if (!input.trim()) { toast("Il testo non può essere vuoto", true); return; }
+        const { error } = await supabase.rpc("set_question_title", {
+          p_question: qid, p_title: input.trim(),
+        });
+        if (error) throw error;
+        toast("Testo aggiornato");
+        ctx.refresh();
+      } else if (action === "edit-ct") {
+        const c = challenges.find((x) => x.id === cid);
+        const title = prompt("Nuovo titolo della sfida:", c?.title ?? "");
+        if (title === null) return;
+        if (!title.trim()) { toast("Il titolo non può essere vuoto", true); return; }
+        const description = prompt("Nuova descrizione:", c?.description ?? "");
+        if (description === null) return;
+        const { error } = await supabase.rpc("set_challenge_text", {
+          p_challenge: cid, p_title: title.trim(), p_description: description.trim(),
+        });
+        if (error) throw error;
+        toast("Testo aggiornato");
+        ctx.refresh();
+      } else if (action === "del-q") {
+        if (!confirm("Eliminare definitivamente questa scommessa? Verranno cancellati anche i voti e gli eventuali punti già assegnati.")) return;
+        const { error } = await supabase.rpc("delete_question", { p_question: qid });
+        if (error) throw error;
+        toast("Scommessa eliminata");
+        ctx.refresh();
+      } else if (action === "del-c") {
+        if (!confirm("Eliminare definitivamente questa sfida? Se era completata, i punti assegnati verranno rimossi.")) return;
+        const { error } = await supabase.rpc("delete_challenge", { p_challenge: cid });
+        if (error) throw error;
+        toast("Sfida eliminata");
         ctx.refresh();
       }
     } catch (err) {
