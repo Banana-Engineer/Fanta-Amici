@@ -254,31 +254,44 @@ export async function groupView(ctx, groupId) {
         </div>
       </div>
 
+      <div class="actions-row">
+        <a class="btn btn-primary" href="#/group/${group.id}/new-question">${icon("plus", 16)} Scommessa</a>
+        <a class="btn btn-ghost" href="#/group/${group.id}/new-challenge">${icon("target", 16)} Sfida</a>
+      </div>
+
       <div class="group-grid">
-        <aside class="group-side">
-          <h2 class="section-title">${icon("trophy", 15)} Classifica</h2>
-          <div class="card" id="leaderboard"></div>
+        <div class="col-left">
+          <section class="blk blk-classifica">
+            <h2 class="section-title">${icon("trophy", 15)} Classifica</h2>
+            <div class="card" id="leaderboard"></div>
+          </section>
 
-          <h2 class="section-title">${icon("bell", 15)} Attività recenti</h2>
-          <div class="card" id="activity-card">
-            <div id="activity"></div>
-            <button class="btn btn-ghost btn-small btn-block more-activity" data-action="more-activity" hidden>
-              Mostra altre attività
-            </button>
-          </div>
-        </aside>
+          <section class="blk blk-attivita">
+            <h2 class="section-title">${icon("bell", 15)} Attività recenti</h2>
+            <div class="card" id="activity-card">
+              <div id="activity"></div>
+              <button class="btn btn-ghost btn-small btn-block more-activity" data-action="more-activity" hidden>
+                Mostra altre attività
+              </button>
+            </div>
+          </section>
+        </div>
 
-        <div class="group-main">
-          <div class="actions-row">
-            <a class="btn btn-primary" href="#/group/${group.id}/new-question">${icon("plus", 16)} Scommessa</a>
-            <a class="btn btn-ghost" href="#/group/${group.id}/new-challenge">${icon("target", 16)} Sfida</a>
-          </div>
+        <div class="col-right">
+          <section class="blk blk-davotare" id="blk-davotare">
+            <h2 class="section-title">${icon("dices", 15)} Da votare</h2>
+            <div id="davotare-list"></div>
+          </section>
 
-          <h2 class="section-title">${icon("zap", 15)} In corso</h2>
-          <div id="active-list"></div>
+          <section class="blk blk-attesa" id="blk-attesa">
+            <h2 class="section-title">${icon("clock", 15)} In attesa di risultato</h2>
+            <div id="attesa-list"></div>
+          </section>
 
-          <h2 class="section-title">${icon("archive", 15)} Concluse</h2>
-          <div id="done-list"></div>
+          <section class="blk blk-concluse" id="blk-concluse">
+            <h2 class="section-title">${icon("archive", 15)} Concluse</h2>
+            <div id="done-list"></div>
+          </section>
         </div>
       </div>
     </div>`);
@@ -317,23 +330,39 @@ export async function groupView(ctx, groupId) {
   }
   renderActivities();
 
-  // --- quesiti e sfide ---
-  const activeList = root.querySelector("#active-list");
+  // --- quesiti e sfide, divisi in tre gruppi ---
+  //   Da votare      = scommesse aperte che NON hai ancora votato + sfide attive
+  //   In attesa      = scommesse che hai votato (o già chiuse) senza ancora il risultato
+  //   Concluse       = scommesse risolte + sfide completate
+  const davotareList = root.querySelector("#davotare-list");
+  const attesaList = root.querySelector("#attesa-list");
   const doneList = root.querySelector("#done-list");
 
   for (const q of questions) {
-    const card = questionCard(q, votesByQ(q.id), ctx, isAdmin);
-    (qState(q) === "resolved" ? doneList : activeList).append(card);
+    const st = qState(q);
+    const myVote = votesByQ(q.id).some((v) => v.user_id === ctx.session.user.id);
+    let target;
+    if (st === "resolved") target = doneList;
+    else if (st === "open" && !myVote) target = davotareList;
+    else target = attesaList;
+    target.append(questionCard(q, votesByQ(q.id), ctx, isAdmin));
   }
   for (const c of challenges) {
     const card = challengeCard(c, ctx, isAdmin, leaderboard);
-    (c.status === "completed" ? doneList : activeList).append(card);
+    (c.status === "completed" ? doneList : davotareList).append(card);
   }
-  if (!activeList.children.length) {
-    activeList.append(el('<div class="card empty">Niente in corso. Crea la prima scommessa!</div>'));
-  }
-  if (!doneList.children.length) {
-    doneList.append(el('<div class="card empty">L’archivio è ancora vuoto.</div>'));
+
+  const blk = (id) => root.querySelector("#" + id);
+  if (!davotareList.children.length && !attesaList.children.length && !doneList.children.length) {
+    davotareList.append(el('<div class="card empty">Ancora niente qui. Crea la prima scommessa o sfida!</div>'));
+    blk("blk-attesa").hidden = true;
+    blk("blk-concluse").hidden = true;
+  } else {
+    if (!davotareList.children.length) {
+      davotareList.append(el('<div class="card empty">Sei in pari: nessuna scommessa da votare.</div>'));
+    }
+    if (!attesaList.children.length) blk("blk-attesa").hidden = true;
+    if (!doneList.children.length) blk("blk-concluse").hidden = true;
   }
 
   // --- azioni (delegate) ---
